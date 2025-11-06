@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+# script to compile and run code
+
+
+# Compile all .c files from src/ using headers from include/
+gcc src/*.c -Iinclude -o file_manager || { echo "Compilation error"; exit 1; }
+
+echo "Compilation finished."
+
+
+# Ask if user wants to run the program
+read -p "Do you want to run the program? (Y/N): " choice
+
+if [[ "$choice" =~ ^[Yy]$ ]]; then
+    echo "Running the program..."
+    ./file_manager
+else
+    echo "Program not executed."
+fi
