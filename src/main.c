@@ -51,13 +51,13 @@ int main() {
 void processCommand(char *tokens[], int tokenCount) {
 // *tokens[] is the same as **tokens, both are correct way to show table of pointers
 
-    if (tokenCount == 0) return;
+    if(tokenCount == 0) return;
 
-    if (strcmp(tokens[0], "exit") == 0) {
+    if(strcmp(tokens[0], "exit") == 0) {
         printf("Exiting File Manager...\n");
         exit(0);
     }
-    else if (strcmp(tokens[0], "help") == 0) {
+    else if(strcmp(tokens[0], "help") == 0) {
         printf("\n");
         printf("Available commands:\n");
         printf(" create <filename>\n");
@@ -70,7 +70,33 @@ void processCommand(char *tokens[], int tokenCount) {
         printf(" exit\n");
         printf("\n");
     }
+    else if(strcmp(tokens[0], "create") == 0) {
+        if(tokenCount < 2) {
+            printf("Usage: create <filename>\n");
+        } else {
+            createFile(tokens[1]);
+        }
+    }
+    else if(strcmp(tokens[0], "read") == 0) {
+        if(tokenCount < 2) {
+            printf("Usage: read <filename>\n");
+        } else {
+            readFile(tokens[1]);
+        }
+    }
+    else if(strcmp(tokens[0], "delete") == 0) {
+        if(tokenCount < 2) {
+            printf("Usage: delete <filename>\n");
+        } else {
+            deleteFile(tokens[1]);
+        }
+    }
+    else if(strcmp(tokens[0], "list") == 0) {
+        listFiles();
+    }
     else {
         printf("Unknown command: %s\n", tokens[0]);
     }
 }
+
+// EOF
