@@ -2,7 +2,6 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <string.h>
-#include "../include/menu.h"
 #include "../include/file_ops.h"
 
 void processCommand(char *tokens[], int tokenCount);
