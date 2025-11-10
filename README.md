@@ -25,17 +25,19 @@ Mini File Manager Simulator is a simple, modular file system simulator written i
 
 ### How to Run
 
-1. Compile the project:
+Simply execute:
 
-   ```sh
-   gcc src/*.c -Iinclude -o run/mini_file_manager
-   ```
+```sh
+./run
+```
 
-2. Run the program:
+The `run` script will automatically compile the project and, if you confirm by typing `y` or `Y`, launch the program. This makes setup and execution easier for new users.
 
-   ```sh
-   ./run/mini_file_manager
-   ```
+---
+
+### Code Comments
+
+The code contains comments to help you understand the logic and structure. These comments are intended for educational purposes and to make the code easier to follow, especially for those learning about memory management and data structures in C.
 
 ---
 
