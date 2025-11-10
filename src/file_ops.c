@@ -57,91 +57,117 @@ void createFile(const char *filename) {
 
 void writeFile(const char *filename, const char *text) {
 
-    FILE *pFile = fopen(filename, "w");
+    bool found = false;
 
-    if(!pFile){
-        printf("File %s doesn't exist.\n", filename);
-        printf("DO you wnat to create this file?");
-        return;
+    for(int i = 0; i < fileCount; i++) {
+        if(strcmp(files[i]->name, filename) == 0) {
+
+            //found it
+            found = true;
+
+            // free space/memory from old content
+            free(files[i]->content);
+
+            // +1 beceuse \0 char at the end
+            files[i]->content = malloc(strlen(text) + 1);
+
+            // copy text safely
+            strcpy(files[i]->content, text);
+            
+            printf("Content written to file: %s\n", filename);
+            return;
+        }
     }
+    if (!found) {
+        printf("File doesn't exist: %s\n", filename);
+    } 
 }
 
 void readFile(const char *filename) {
 
-    FILE *pFile = fopen(filename, "r");
+    bool found = false;
 
-    if(!pFile){
-        printf("File %s doesn't exist.\n", filename);
-        return;
-    }
+    for(int i = 0; i < fileCount; i++) {
+        if(strcmp(files[i]->name, filename) == 0) {
 
-    char line[256];
-    while(fgets(line, sizeof(line), pFile)) {
-        printf("%s", line); // prints line after line 
+            //found it
+            found = true;
+
+            printf("=== %s ===\n", files[i]->name);
+
+            if(files[i]->content && strlen(files[i]->content) > 0) { // strlen() return lenght of text
+                printf("%s\n", files[i]->content);
+            }
+            else {
+                printf("(empty file)\n");
+            }
+
+            printf("=============\n");
+            return;
+        }
     }
-    fclose(pFile);
-    printf("\n--- End of file ---\n");
+    if (!found) {
+        printf("File doesn't exist: %s\n", filename);
+    }
 }
 
 void deleteFile(const char *filename) {
 
-    FILE *pFile = fopen(filename, "r"); 
-    
-    if(!pFile){
-        printf("File %s doesn't exist.\n", filename);
-        return;
-    }
+    bool found = false;
 
-    fclose(pFile);
-    
-    printf("Are you sure you want to delete '%s'? (y/n): ", filename);
-    char answer;
-    scanf(" %c", &answer);
+    for(int i = 0; i < fileCount; i++) {
+        if(strcmp(files[i]->name, filename) == 0) {
+            
+            //found it
+            found = true;
 
-    if(answer != 'y' && answer != 'Y') {
-        printf("Cancelled.\n");
-        return;
+            // free memory of the deleted file
+            free(files[i]->name);
+            free(files[i]->content);
+            free(files[i]);
+
+            //move all files to cover for deleted file; fixing dangling pointer problem
+            //  Shift remaining elements left to fill the gap
+            for(int j = i; j < fileCount - 1; j++) {
+                files[j] = files[j+1];
+            }
+            // j=1 -> files[1] = files[2]
+
+            // update file count for new count
+            fileCount--;
+
+            // shrink the dynamic array to free unused memory
+            files = realloc(files, sizeof(File*) * fileCount);
+
+            // if there are 0 elemnets/files free up all the memory
+            if(fileCount == 0) {
+                free(files);
+                files = NULL;
+            }
+
+            printf("Deleted file: %s\n", filename);
+            return;
+        }
     }
-    
-    if(remove(filename) == 0) {
-            printf("File deleted successfully: %s\n", filename);
-    } else {
-        printf("Error deleting file: %s\n", filename);
+    if (!found) {
+        printf("File doesn't exist: %s\n", filename);
     }
 }
 
 void listFiles(void) {
 
-    DIR *pDir = opendir(".");
-
-    if (!pDir) {
-        printf("Error: could not open current directory.\n");
+    if(fileCount == 0) {
+        printf("No files in memory.\n");
         return;
     }
 
-    struct dirent *entry;   // represent every file/folder in dir
-                            // pointer to the next entry in the directory during iteration
-
-    int fileCount = 0;
-
-    printf("Files in current directory:\n");
-    while((entry = readdir(pDir)) != NULL) {    // assign pDir to entry and check if it's not null
-                                                // fetch next entry until end of directory
-
-        if(entry->d_type == DT_REG) {   //dt_reg normal file, dt_dir folders
-                                        // DT_REG = regular file (skip directories and other types)
-
-            printf("  %s\n", entry->d_name);    // prints dir name of entry struct
-                                                // print the file name
-            fileCount++;
-        }
+    printf("Files in memory:\n");
+    for(int i =0; i <fileCount; i++) {
+        printf("  %d. %s\n", i + 1, files[i]->name);
     }
-
-    closedir(pDir);
 
     printf("Total files: %d\n", fileCount);
 }
-
 
 // disk operations
 void saveAllToDisk(void) {
