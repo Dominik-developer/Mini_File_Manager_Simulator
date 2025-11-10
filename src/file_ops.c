@@ -68,12 +68,20 @@ void writeFile(const char *filename, const char *text) {
             // free space/memory from old content
             free(files[i]->content);
 
-            // +1 beceuse \0 char at the end
-            files[i]->content = malloc(strlen(text) + 1);
+            size_t len = strlen(text);
 
-            // copy text safely
+            // allocate memory for content + \n (newline) + \0 (null terminator)
+            files[i]->content = malloc(strlen(text) + 2);
+
+            // copy the text safely
             strcpy(files[i]->content, text);
-            
+
+            // add \n if missing
+            if(len == 0 || text[len-1] != '\n') {
+                files[i]->content[len] = '\n';
+                files[i]->content[len+1] = '\0';
+            }
+
             printf("Content written to file: %s\n", filename);
             return;
         }
@@ -96,7 +104,7 @@ void readFile(const char *filename) {
             printf("=== %s ===\n", files[i]->name);
 
             if(files[i]->content && strlen(files[i]->content) > 0) { // strlen() return lenght of text
-                printf("%s\n", files[i]->content);
+                printf("%s", files[i]->content);
             }
             else {
                 printf("(empty file)\n");
@@ -172,11 +180,104 @@ void listFiles(void) {
 // disk operations
 void saveAllToDisk(void) {
 
+    FILE *pFile = fopen("data/files.db", "w");
+
+    if(!pFile) {
+        printf("Error: could not open files.db for writing.\n");
+        return;
+    }
+
+    for(int i = 0; i < fileCount; i++) {
+
+        fprintf(pFile, "FILE:%s\n",files[i]->name);
+
+        if(files[i]->content && strlen(files[i]->content) > 0) {
+
+            // Get the length of the content (number of characters)
+            size_t len = strlen(files[i]->content);
+
+            // Write file content exactly as is (without forcing extra \n)
+            fwrite(files[i]->content, 1, len, pFile);
+
+            // Only add \n if last char is NOT already newline
+            if(files[i]->content[len-1] != '\n') { // If the last character is NOT a newline ('\n')...
+                fputc('\n',pFile); // ...then manually add a single newline at the end of the content
+            }   
+        }
+
+        fprintf(pFile, "<END>\n");
+    }
+
+    fclose(pFile);
+    printf("Saved %d files to disk.\n", fileCount);
 }
 
 void loadAllFromDisk(void) {
 
+    FILE *pFile = fopen("data/files.db", "r");
+
+    if(!pFile) {
+        printf("No saved files found.\n");
+        return;
+    }
+
+    char line[512];
+
+    while(fgets(line, sizeof(line), pFile)) {
+
+        line[strcspn(line, "\n")] = '\0';
+
+        // checking for file beggining
+        if(strncmp(line, "FILE:", 5) == 0) {
+
+            char *filename = line + 5; // skip "FILE:" - save filname as data that is 5 char from beggining
+            // FILE:test.txt
+
+            //crete new file structure in memory
+            File *pNewFile = malloc(sizeof(File));
+
+            pNewFile->name = malloc(strlen(filename + 1)); // add space in mem for \0
+            strcpy(pNewFile->name, filename);
+
+            pNewFile->content = malloc(1);
+            pNewFile->content = strdup(""); // empty string
+
+            char contentBuffor[8192] = "";
+
+            // read content lines until "<END>"
+            while(fgets(line, sizeof(line), pFile)) {
+                line[strcspn(line, "\n")] = '\0';
+                if(strcmp(line, "<END>") == 0) break; // may change to EOF later
+                strcat(contentBuffor, line); // strcat(a,b) adds b to the end of a 
+                strcat(contentBuffor, "\n"); // ads \n at the end of every line
+            }
+
+            // allocating enought memory for content of file
+            free(pNewFile->content);
+            pNewFile->content = malloc(strlen(contentBuffor) + 1);
+            strcpy(pNewFile->content, contentBuffor);
+
+            //adding newFile to files array in memory
+            File **temp = realloc(files, sizeof(File*) * (fileCount + 1));
+                // files is a table of pointers for File structure
+            if(!temp) {
+                printf("Memory allocation failed!\n");
+                free(pNewFile->name);
+                free(pNewFile->content);
+                free(pNewFile);
+                fclose(pFile);
+                return;
+            }
+
+            files = temp;
+            files[fileCount] = pNewFile; // correct: assign File* to File*
+            fileCount++;
+        }
+    }
+    fclose(pFile);
+    printf("Loaded %d files from disk.\n", fileCount);
 }
+
 
 
 //EOF

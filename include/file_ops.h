@@ -9,7 +9,7 @@ typedef struct {
 } File;
 
 extern File **files; // pointer to dynamic array of File pointers
-extern File fileCount; // number of files currently in memory
+extern int fileCount; // number of files currently in memory
 
 
 // memory functions

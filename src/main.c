@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <string.h>
+#include <dirent.h>
 #include "../include/file_ops.h"
 
 void processCommand(char *tokens[], int tokenCount);
@@ -10,6 +11,8 @@ int main() {
 
     bool isRunning = true;
     char command[100];
+
+    loadAllFromDisk();
 
     while(isRunning) {
 
@@ -49,10 +52,12 @@ int main() {
 
 void processCommand(char *tokens[], int tokenCount) {
 // *tokens[] is the same as **tokens, both are correct way to show table of pointers
+// *tokens[] is table of string pointers
 
     if(tokenCount == 0) return;
 
     if(strcmp(tokens[0], "exit") == 0) {
+        saveAllToDisk();
         printf("Exiting File Manager...\n");
         exit(0);
     }
@@ -64,8 +69,6 @@ void processCommand(char *tokens[], int tokenCount) {
         printf(" read <filename>\n");
         printf(" delete <filename>\n");
         printf(" list\n");
-        printf(" save\n");
-        printf(" load\n");
         printf(" exit\n");
         printf("\n");
     }
@@ -74,6 +77,20 @@ void processCommand(char *tokens[], int tokenCount) {
             printf("Usage: create <filename>\n");
         } else {
             createFile(tokens[1]);
+        }
+    }
+    else if(strcmp(tokens[0], "write") == 0) {
+        if(tokenCount < 3) {
+            printf("Usage: write <filename> <text>\n");
+        } else {
+
+            // join all tokens from 2 to the end into one string
+            char buffer[512] = "";
+            for(int i = 2; i < tokenCount; i++) {
+                strcat(buffer, tokens[i]);
+                if(i < tokenCount - 1) strcat(buffer, " "); // add space between words
+            }
+            writeFile(tokens[1], buffer);
         }
     }
     else if(strcmp(tokens[0], "read") == 0) {
