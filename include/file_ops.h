@@ -22,5 +22,6 @@ void listFiles(void); // adding void to indicate no parameters
 //disk functions
 void saveAllToDisk(void);
 void loadAllFromDisk(void);
+void clearMemory(void);
 
 #endif

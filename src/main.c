@@ -62,15 +62,14 @@ void processCommand(char *tokens[], int tokenCount) {
         exit(0);
     }
     else if(strcmp(tokens[0], "help") == 0) {
-        printf("\n");
         printf("Available commands:\n");
         printf(" create <filename>\n");
         printf(" write <filename>\n");
         printf(" read <filename>\n");
         printf(" delete <filename>\n");
         printf(" list\n");
+        printf(" reload\n");
         printf(" exit\n");
-        printf("\n");
     }
     else if(strcmp(tokens[0], "create") == 0) {
         if(tokenCount < 2) {
@@ -109,6 +108,12 @@ void processCommand(char *tokens[], int tokenCount) {
     }
     else if(strcmp(tokens[0], "list") == 0) {
         listFiles();
+    }
+    else if(strcmp(tokens[0], "reload") == 0) {
+        saveAllToDisk();
+        clearMemory();
+        loadAllFromDisk();
+        printf("Reloaded data from disk.\n");
     }
     else {
         printf("Unknown command: %s\n", tokens[0]);

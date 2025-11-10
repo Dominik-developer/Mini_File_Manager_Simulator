@@ -278,6 +278,17 @@ void loadAllFromDisk(void) {
     printf("Loaded %d files from disk.\n", fileCount);
 }
 
+void clearMemory(void) {
 
+    for(int i = 0; i < fileCount; i++) {
+        free(files[i]->name);
+        free(files[i]->content);
+        free(files[i]);
+    }
+
+    free(files);
+    files = NULL;
+    fileCount = 0;
+}
 
 //EOF
